@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tomcat-pod
+  labels:
+    name: tomcat-pod
+    app: tomcat
+spec:
+  containers:
+  - name: tomcat-pod
+    image: harbor.prodyna.com/training/tomcat-sample:oteichmann
+    env:
+      - name: STATIC_VAR
+        value: "Hello from environment"
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+    ports:
+      - name: http
+        containerPort: 8080
