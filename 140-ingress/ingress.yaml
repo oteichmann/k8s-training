@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tomcat-ingress
+  labels:
+    name: tomcat-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: tomcat.34.245.65.132.nip.io
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: tomcat-svc
+            port: 
+              name: http
