@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: init-container-sample
+spec:
+  selector:
+    matchLabels:
+      app: init-container-sample
+  template:
+    metadata:
+      labels:
+        app: init-container-sample
+    spec:
+      containers:
+        - name: main
+          image: harbor.prodyna.com/dockerhub/library/busybox:stable
+          command: ['sh', '-c', 'if [ -f "/share/test.file" ]; then sleep 3600; else exit 1; fi']
+          volumeMounts:
+            - mountPath: /share
+              name: share
+      initContainers:
+        - name: init
+          image: busybox
+          command:
+            - touch
+            - "/share/test.file"
+          volumeMounts:
+            - mountPath: /share
+              name: share
+      volumes:
+        - name: share
+          emptyDir: {}
