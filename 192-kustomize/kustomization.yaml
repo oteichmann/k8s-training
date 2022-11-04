@@ -1,0 +1,6 @@
+resources:
+  - deployment.yaml
+  - service.yaml
+configMapGenerator:
+  - env: conf.properties
+    name: tomcat-sampl-conf
