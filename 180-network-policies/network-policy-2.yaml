@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-admin-to-tomcat
+spec:
+  podSelector:
+    matchLabels: { run : admin-pod }
+  policyTypes:
+    - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: tomcat
+    ports:
+      - protocol: TCP
+        port: 8080
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-tomcat-from-admin
+spec:
+  podSelector:
+    matchLabels:
+      app: tomcat
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          run: admin-pod 
+    ports:
+      - protocol: TCP
+        port: 8080
