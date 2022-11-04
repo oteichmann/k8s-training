@@ -1,0 +1,75 @@
+# ConfigMap with mtail configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mtail-cm
+data:
+  tomcat.mtail: |
+    # Count tomcat access log lines
+    counter k8s_tomcat_lines_total
+    /$/ {
+      k8s_tomcat_lines_total++
+    }
+
+    # Count requests to /tomcat-sample
+    counter k8s_tomcat_sample_total
+    /tomcat-sample/ {
+      k8s_tomcat_sample_total++
+    }
+
+    counter k8s_tomcat_requests_404_total
+    /.*"\s404.*/ {
+      k8s_tomcat_requests_404_total++
+    }
+
+---
+# Deployment with Tomcat container and Mtail container as
+# an adapter to count access log lines of Tomcat
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adapter-pattern-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tomcat
+  template:
+    metadata:
+      labels:
+        app: tomcat
+    spec:
+      containers:
+        - name: tomcat
+          image: harbor.prodyna.com/training/tomcat-sample:oteichmann
+          ports:
+          - name: http
+            containerPort: 8080
+          volumeMounts:
+          - name: tomcat-share
+            mountPath: /usr/local/tomcat/logs
+        - name: mtail
+          image: harbor.prodyna.com/training/mtail:latest
+          ports:
+          - name: http
+            containerPort: 9303
+          args:
+            - "--address" 
+            - "0.0.0.0"
+            - "--port"
+            - "9303"
+            - "--logs"
+            - "/tomcat-logs/localhost_access*.txt"
+            - "--progs"
+            - "/opt/mtail-conf/tomcat.mtail"
+          volumeMounts:
+          - name: tomcat-share
+            mountPath: /tomcat-logs
+          - name: mtail-configmap
+            mountPath: /opt/mtail-conf
+      volumes:
+      - name: tomcat-share
+        emptyDir: {}
+      - name: mtail-configmap
+        configMap:
+          name: mtail-cm
