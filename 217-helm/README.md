@@ -12,6 +12,18 @@ Install chart with storageClass available in cluster
 helm install mysql my-repo/mysql  --set global.storageClass=local-nfs
 ```
 
+**Alternative approach**
+Fetch values yaml for configuration
+```
+helm inspect values my-repo/mysql > mysql-helm-chart-config.yaml
+```
+
+Set desireded properties, sucha as storageClass in config YAML.
+
+Run install while referencing config file.
+```
+helm install -f mysql-helm-chart-config.yaml mysql my-repo/mysql
+```
 
 ## Removal
 ```
